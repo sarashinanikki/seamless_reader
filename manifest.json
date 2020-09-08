@@ -9,10 +9,10 @@
                 "https://ncode.syosetu.com/*"
             ],
             "js": [
-                "content_scripts.js"
+                "js/content_scripts.js"
             ],
             "css": [
-                "style.css"
+                "css/style.css"
             ]
         }
     ]
