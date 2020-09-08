@@ -17,6 +17,6 @@
         }
     ],
     "permissions": [
-        "https://ncode.syosetu.com*"
+        "https://ncode.syosetu.com/*"
     ]
 }

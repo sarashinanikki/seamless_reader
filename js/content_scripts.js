@@ -6,6 +6,12 @@ window.onload = function () {
         elem.removeAttribute('id');
         elem.classList.add('novel_honbun');
     }
+
+    var novelNo = document.getElementById('novel_no');
+    if (novelNo) {
+        novelNo.removeAttribute('id');
+        novelNo.classList.add('novel_no');
+    }
 };
 
 function isExistNext() {
@@ -36,10 +42,23 @@ window.document.addEventListener('scroll', function () {
     }
 });
 
-function getGuide(nextContent) {
-    var guide = nextContent.getElementsByClassName('novel_bn');
+function getGuide(content) {
+    var guide = content.getElementsByClassName('novel_bn');
     var ret = guide[guide.length-2];
     return ret;
+}
+
+function getNumber(content) {
+    var novelNo = content.getElementById('novel_no');
+    if (novelNo) {
+        novelNo.removeAttribute('id');
+        novelNo.classList.add('novel_no');
+    }
+    return novelNo;
+}
+
+function getHonbun(content) {
+    
 }
 
 function getNextUrl(guide) {
@@ -82,11 +101,19 @@ document.addEventListener('scrollBottom', function () {
                 var honbuns = document.getElementsByClassName('novel_honbun');
                 var parent = document.getElementById('novel_color');
                 var lastHonbun = honbuns[honbuns.length-1];
+                console.log(lastHonbun);
+                if (lastHonbun === undefined) {
+                    blocked = false;
+                    return;
+                }
 
                 var nextGuide = getGuide(nextContent);
 
                 var titles = document.getElementsByClassName('novel_subtitle');
                 const titleLists = Array.from(titles);
+
+                var nextNovelNo = getNumber(nextContent);
+
                 console.log(titleLists.length);
                 console.log(titleLists[titleLists.length-1]);
                 if (!titleLists[titleLists.length-1].isEqualNode(nextTitle)) {
@@ -96,6 +123,8 @@ document.addEventListener('scrollBottom', function () {
                     var lastTitle = titles[titles.length-1];
                     parent.insertBefore(nextHonbun, lastTitle.nextElementSibling);
                     parent.insertBefore(nextGuide, lastTitle);
+                    parent.insertBefore(nextNovelNo, lastTitle.nextElementSibling);
+                    
                     nextGuide.insertAdjacentHTML('beforebegin', '<p> <br><br> </p>');
                     nextHonbun.insertAdjacentHTML('beforebegin', '<p> <br><br> </p>');
                     nextTitle.insertAdjacentHTML('beforebegin', '<p> <br><br> </p>');
