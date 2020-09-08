@@ -37,7 +37,7 @@ window.document.addEventListener('scroll', function () {
     var scrollTop = body.scrollTop || html.scrollTop;
     var scrollBottom = html.scrollHeight - html.clientHeight - scrollTop;
 
-    if (scrollBottom <= 3000) {
+    if (scrollBottom <= 4000) {
         window.document.dispatchEvent(scrollBottomEvent);
     }
 });
@@ -58,7 +58,10 @@ function getNumber(content) {
 }
 
 function getHonbun(content) {
-    
+    var nextHonbun = content.getElementById('novel_honbun');
+    nextHonbun.removeAttribute('id');
+    nextHonbun.classList.add('novel_honbun');
+    return nextHonbun;
 }
 
 function getNextUrl(guide) {
@@ -92,14 +95,11 @@ document.addEventListener('scrollBottom', function () {
             }
             else {
                 var nextContent = xhr.response;
-                var nextHonbun = nextContent.getElementById('novel_honbun');
-                nextHonbun.removeAttribute('id');
-                nextHonbun.classList.add('novel_honbun');
+                var nextHonbun = getHonbun(nextContent);
                 var nextTitles = nextContent.getElementsByClassName('novel_subtitle');
                 var nextTitle = nextTitles[nextTitles.length-1];
 
                 var honbuns = document.getElementsByClassName('novel_honbun');
-                var parent = document.getElementById('novel_color');
                 var lastHonbun = honbuns[honbuns.length-1];
                 console.log(lastHonbun);
                 if (lastHonbun === undefined) {
@@ -107,6 +107,7 @@ document.addEventListener('scrollBottom', function () {
                     return;
                 }
 
+                var parent = document.getElementById('novel_color');
                 var nextGuide = getGuide(nextContent);
 
                 var titles = document.getElementsByClassName('novel_subtitle');
