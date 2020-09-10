@@ -165,10 +165,12 @@ document.addEventListener('scrollBottom', function () {
                     var entity = {};
                     const novelTitle = getNovelTitle(nextContent);
                     const number = nextNovelNo.textContent.split('/')[0];
+                    const date = new Date();
                     entity[novelId] = {
                         "title": novelTitle,
                         "url": nextUrl,
-                        "number": number
+                        "number": number,
+                        "date": date.getTime()
                     }
                     console.log(entity);
                     chrome.storage.local.set(entity, function () {

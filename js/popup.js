@@ -3,73 +3,59 @@ function getNovelId(url) {
     return novelId;
 }
 
-function getBookmarkList(listContainer) {
+function getBookmarkData(listContainer, curContainer, novelId) {
     return new Promise((resolve, reject) => {
-        chrome.storage.local.get(function (items) {
+        chrome.storage.local.get(function(items) {
             console.log(items);
-            var bookmarkList = items;
-            for (const key of Object.keys(bookmarkList)) {
-                const novelTitle = bookmarkList[key]['title'];
-                const url = bookmarkList[key]['url'];
-                const number = bookmarkList[key]['number'];
-
-                var bookmark = document.createElement('div');
-                bookmark.classList.add('list-element');
-                var titleParagraph = document.createElement('p');
-                titleParagraph.classList.add('novel-title');
-
-                var removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.setAttribute('name', getNovelId(url));
-                removeButton.classList.add('delete-button');
-                removeButton.innerHTML = 'x'
-
-
-                var link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('target', '_blank');
-                link.setAttribute('rel', 'noopener noreferrer')
-                link.innerHTML = '第' + number + '部分';
-
-                titleParagraph.innerHTML = novelTitle;
-                bookmark.insertAdjacentElement('beforeend', titleParagraph);
-                bookmark.insertAdjacentElement('beforeend', link);
-                bookmark.insertAdjacentElement('beforeend', removeButton);
-                listContainer.appendChild(bookmark);
+            var list = [];
+            for (const [key, value] of Object.entries(items)) {
+                var ob = {
+                    "id": key,
+                    "title": value['title'],
+                    "number": value['number'],
+                    "url": value['url'],
+                    "date": value['date']
+                }
+                list.push(ob);
             }
-            resolve('getBookmarkList => setEvent');
+
+            list.sort(function (a, b) {
+                if (+a.date > +b.date) {
+                    return -1;
+                }
+                else {
+                    return 1;
+                }
+            });
+
+            console.log(list);
+            const param = [listContainer, curContainer, novelId, list]
+            resolve(param);
         });
     });
 }
 
-function getCurrentNovelBookmark(curContainer, novelId, passVal) {
+// param = [listContainer, curContainer, novelId, list]
+function showBookmarkList(param) {
     return new Promise((resolve, reject) => {
-        chrome.storage.local.get(novelId, function (items){
-            console.log(items);
-            var curBookmark = items[novelId];
-            
-            if (curBookmark === undefined) {
-                curContainer.innerHTML = 'この小説の記録はありません';
-                return;
-            }
+        listContainer = param[0]; curContainer = param[1]; novelId = param[2]; bookmarkList = param[3];
+        console.log(bookmarkList);
+        bookmarkList.forEach(el => {
+            const novelTitle = el['title'];
+            const url = el['url'];
+            const number = el['number'];
 
             var bookmark = document.createElement('div');
-            bookmark.classList.add('cur-element');
-            
+            bookmark.classList.add('list-element');
             var titleParagraph = document.createElement('p');
             titleParagraph.classList.add('novel-title');
 
             var removeButton = document.createElement('button');
             removeButton.type = 'button';
-            removeButton.setAttribute('name', novelId);
+            removeButton.setAttribute('name', getNovelId(url));
             removeButton.classList.add('delete-button');
             removeButton.innerHTML = 'x'
 
-            const novelTitle = curBookmark['title'];
-            const url = curBookmark['url'];
-            const number = curBookmark['number'];
-
-            titleParagraph.innerHTML = novelTitle;
 
             var link = document.createElement('a');
             link.href = url;
@@ -77,13 +63,59 @@ function getCurrentNovelBookmark(curContainer, novelId, passVal) {
             link.setAttribute('rel', 'noopener noreferrer')
             link.innerHTML = '第' + number + '部分';
 
+            titleParagraph.innerHTML = novelTitle;
             bookmark.insertAdjacentElement('beforeend', titleParagraph);
             bookmark.insertAdjacentElement('beforeend', link);
             bookmark.insertAdjacentElement('beforeend', removeButton);
-            curContainer.appendChild(bookmark);
-            resolve('getCurrentBookmark => setEvent');
+            listContainer.appendChild(bookmark);
         });
-    })
+
+        const nextParam = [curContainer, novelId, bookmarkList];
+        resolve(nextParam);
+    });
+}
+
+function showCurrentNovelBookmark(param) {
+    return new Promise((resolve, reject) => {
+        curContainer = param[0]; novelId = param[1]; bookmarkList = param[2];
+        console.log(bookmarkList);
+        const curBookmark = bookmarkList.find(bm => bm.id === novelId);
+        
+        if (curBookmark === undefined) {
+            curContainer.innerHTML = 'この小説の記録はありません';
+            resolve('getCurrentBookmark => setEvent');
+        }
+
+        var bookmark = document.createElement('div');
+        bookmark.classList.add('cur-element');
+        
+        var titleParagraph = document.createElement('p');
+        titleParagraph.classList.add('novel-title');
+
+        var removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.setAttribute('name', novelId);
+        removeButton.classList.add('delete-button');
+        removeButton.innerHTML = 'x'
+
+        const novelTitle = curBookmark['title'];
+        const url = curBookmark['url'];
+        const number = curBookmark['number'];
+
+        titleParagraph.innerHTML = novelTitle;
+
+        var link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer')
+        link.innerHTML = '第' + number + '部分';
+
+        bookmark.insertAdjacentElement('beforeend', titleParagraph);
+        bookmark.insertAdjacentElement('beforeend', link);
+        bookmark.insertAdjacentElement('beforeend', removeButton);
+        curContainer.appendChild(bookmark);
+        resolve('getCurrentBookmark => setEvent');
+    });
 }
 
 function updateBookmarks(novelId) {
@@ -91,7 +123,9 @@ function updateBookmarks(novelId) {
     var listContainer = document.getElementById('list-container');
     curContainer.innerHTML = null;
     listContainer.innerHTML = null;
-    Promise.all([getBookmarkList(listContainer), getCurrentNovelBookmark(curContainer, novelId)])
+    getBookmarkData(listContainer, curContainer, novelId)
+    .then(showBookmarkList)
+    .then(showCurrentNovelBookmark)
     .then(setEvent)
     .then((response) => {
         console.log(response);
