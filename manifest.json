@@ -16,7 +16,12 @@
             ]
         }
     ],
+    "browser_action" : {
+        "default_title" : "Seamless Reader",
+        "default_popup" : "html/popup.html"
+    },
     "permissions": [
-        "https://ncode.syosetu.com/*"
+        "https://ncode.syosetu.com/*",
+        "storage"
     ]
 }

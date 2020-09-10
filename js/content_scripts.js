@@ -1,4 +1,5 @@
 var blocked = false;
+var novelId;
 
 window.onload = function () {
     var elem = document.getElementById('novel_honbun');
@@ -12,7 +13,32 @@ window.onload = function () {
         novelNo.removeAttribute('id');
         novelNo.classList.add('novel_no');
     }
+
+    chrome.storage.local.get(function (items) {
+        console.log(items);
+        bookmarkList = items;
+    });
+
+    const url = location.href;
+    var urlElements = url.split('/');
+    if (urlElements.length >= 5) {
+        novelId = urlElements[3];
+        console.log(novelId);
+    }
 };
+
+chrome.runtime.onMessage.addListener(function (req, sender, sendResponse) {
+    if (req.message === 'novelId') {
+        const url = location.href;
+        var urlElements = url.split('/');
+        var response = '';
+        if (urlElements.length >= 5) {
+            response = urlElements[3];
+        }
+        sendResponse(response);
+    }
+    return true
+})
 
 function isExistNext() {
     var ret = false;
@@ -76,6 +102,12 @@ function getNextUrl(guide) {
     return ret;
 }
 
+function getNovelTitle() {
+    const title = document.getElementsByClassName('contents1')[0].getElementsByTagName('a')[0];
+    const ret = title.textContent;
+    return ret;
+}
+
 document.addEventListener('scrollBottom', function () {
     if (isExistNext()) {
         if (blocked) return;
@@ -129,9 +161,26 @@ document.addEventListener('scrollBottom', function () {
                     nextGuide.insertAdjacentHTML('beforebegin', '<p> <br><br> </p>');
                     nextHonbun.insertAdjacentHTML('beforebegin', '<p> <br><br> </p>');
                     nextTitle.insertAdjacentHTML('beforebegin', '<p> <br><br> </p>');
+
+                    var entity = {};
+                    const novelTitle = getNovelTitle(nextContent);
+                    const number = nextNovelNo.textContent.split('/')[0];
+                    entity[novelId] = {
+                        "title": novelTitle,
+                        "url": nextUrl,
+                        "number": number
+                    }
+                    console.log(entity);
+                    chrome.storage.local.set(entity, function () {
+                        console.log('bookmark updated!');
+                        chrome.runtime.sendMessage({message: "update", novelId: novelId}, function (res) {
+                            console.log(res);
+                        });
+                    });
                 }
             }
             blocked = false;
         }
     }
 });
+
