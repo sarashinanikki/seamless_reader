@@ -1,4 +1,5 @@
 var blocked = false;
+var novelId;
 
 window.onload = function () {
     var elem = document.getElementById('novel_honbun');
@@ -6,7 +7,38 @@ window.onload = function () {
         elem.removeAttribute('id');
         elem.classList.add('novel_honbun');
     }
+
+    var novelNo = document.getElementById('novel_no');
+    if (novelNo) {
+        novelNo.removeAttribute('id');
+        novelNo.classList.add('novel_no');
+    }
+
+    chrome.storage.local.get(function (items) {
+        console.log(items);
+        bookmarkList = items;
+    });
+
+    const url = location.href;
+    var urlElements = url.split('/');
+    if (urlElements.length >= 5) {
+        novelId = urlElements[3];
+        console.log(novelId);
+    }
 };
+
+chrome.runtime.onMessage.addListener(function (req, sender, sendResponse) {
+    if (req.message === 'novelId') {
+        const url = location.href;
+        var urlElements = url.split('/');
+        var response = '';
+        if (urlElements.length >= 5) {
+            response = urlElements[3];
+        }
+        sendResponse(response);
+    }
+    return true
+})
 
 function isExistNext() {
     var ret = false;
@@ -31,15 +63,31 @@ window.document.addEventListener('scroll', function () {
     var scrollTop = body.scrollTop || html.scrollTop;
     var scrollBottom = html.scrollHeight - html.clientHeight - scrollTop;
 
-    if (scrollBottom <= 3000) {
+    if (scrollBottom <= 4000) {
         window.document.dispatchEvent(scrollBottomEvent);
     }
 });
 
-function getGuide(nextContent) {
-    var guide = nextContent.getElementsByClassName('novel_bn');
+function getGuide(content) {
+    var guide = content.getElementsByClassName('novel_bn');
     var ret = guide[guide.length-2];
     return ret;
+}
+
+function getNumber(content) {
+    var novelNo = content.getElementById('novel_no');
+    if (novelNo) {
+        novelNo.removeAttribute('id');
+        novelNo.classList.add('novel_no');
+    }
+    return novelNo;
+}
+
+function getHonbun(content) {
+    var nextHonbun = content.getElementById('novel_honbun');
+    nextHonbun.removeAttribute('id');
+    nextHonbun.classList.add('novel_honbun');
+    return nextHonbun;
 }
 
 function getNextUrl(guide) {
@@ -51,6 +99,12 @@ function getNextUrl(guide) {
             ret = e.href;
         }
     });
+    return ret;
+}
+
+function getNovelTitle() {
+    const title = document.getElementsByClassName('contents1')[0].getElementsByTagName('a')[0];
+    const ret = title.textContent;
     return ret;
 }
 
@@ -73,20 +127,26 @@ document.addEventListener('scrollBottom', function () {
             }
             else {
                 var nextContent = xhr.response;
-                var nextHonbun = nextContent.getElementById('novel_honbun');
-                nextHonbun.removeAttribute('id');
-                nextHonbun.classList.add('novel_honbun');
+                var nextHonbun = getHonbun(nextContent);
                 var nextTitles = nextContent.getElementsByClassName('novel_subtitle');
                 var nextTitle = nextTitles[nextTitles.length-1];
 
                 var honbuns = document.getElementsByClassName('novel_honbun');
-                var parent = document.getElementById('novel_color');
                 var lastHonbun = honbuns[honbuns.length-1];
+                console.log(lastHonbun);
+                if (lastHonbun === undefined) {
+                    blocked = false;
+                    return;
+                }
 
+                var parent = document.getElementById('novel_color');
                 var nextGuide = getGuide(nextContent);
 
                 var titles = document.getElementsByClassName('novel_subtitle');
                 const titleLists = Array.from(titles);
+
+                var nextNovelNo = getNumber(nextContent);
+
                 console.log(titleLists.length);
                 console.log(titleLists[titleLists.length-1]);
                 if (!titleLists[titleLists.length-1].isEqualNode(nextTitle)) {
@@ -96,12 +156,33 @@ document.addEventListener('scrollBottom', function () {
                     var lastTitle = titles[titles.length-1];
                     parent.insertBefore(nextHonbun, lastTitle.nextElementSibling);
                     parent.insertBefore(nextGuide, lastTitle);
+                    parent.insertBefore(nextNovelNo, lastTitle.nextElementSibling);
+                    
                     nextGuide.insertAdjacentHTML('beforebegin', '<p> <br><br> </p>');
                     nextHonbun.insertAdjacentHTML('beforebegin', '<p> <br><br> </p>');
                     nextTitle.insertAdjacentHTML('beforebegin', '<p> <br><br> </p>');
+
+                    var entity = {};
+                    const novelTitle = getNovelTitle(nextContent);
+                    const number = nextNovelNo.textContent.split('/')[0];
+                    const date = new Date();
+                    entity[novelId] = {
+                        "title": novelTitle,
+                        "url": nextUrl,
+                        "number": number,
+                        "date": date.getTime()
+                    }
+                    console.log(entity);
+                    chrome.storage.local.set(entity, function () {
+                        console.log('bookmark updated!');
+                        chrome.runtime.sendMessage({message: "update", novelId: novelId}, function (res) {
+                            console.log(res);
+                        });
+                    });
                 }
             }
             blocked = false;
         }
     }
 });
+
