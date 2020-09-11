@@ -30,7 +30,9 @@ window.onload = function () {
     var lastGuide = guides[guides.length - 1];
     lastGuide.innerHTML = null;
     var atogaki = document.getElementById('novel_a');
-    atogaki.innerHTML = null;
+    if (atogaki) {
+        atogaki.innerHTML = null;
+    }
 };
 
 chrome.runtime.onMessage.addListener(function (req, sender, sendResponse) {
