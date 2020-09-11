@@ -10,3 +10,31 @@
     color: #999999;
     font-size: 90%;
 }
+
+.contents1 {
+    position: relative;
+}
+
+#later-button {
+    position: absolute;
+    outline: none;
+    width: 130px;
+    height: 23px;
+    text-align:center;
+    top: 8px;
+    background-color: #ccdddd;
+    color: #666666;
+    padding-right: 5px;
+    padding-top: 4px;
+    font-size: 90%;
+    text-decoration:none;
+    border: solid;
+    border-width: 2px;
+    border-color: #666666;
+    font-weight: bold;
+}
+
+#later-button:hover {
+    background-color: #99bbcc;
+    color: #ffffff;
+}
