@@ -25,6 +25,12 @@ window.onload = function () {
         novelId = urlElements[3];
         console.log(novelId);
     }
+
+    var guides = document.getElementsByClassName('novel_bn');
+    var lastGuide = guides[guides.length - 1];
+    lastGuide.innerHTML = null;
+    var atogaki = document.getElementById('novel_a');
+    atogaki.innerHTML = null;
 };
 
 chrome.runtime.onMessage.addListener(function (req, sender, sendResponse) {
@@ -68,9 +74,15 @@ window.document.addEventListener('scroll', function () {
     }
 });
 
-function getGuide(content) {
+function getNextGuide(content) {
     var guide = content.getElementsByClassName('novel_bn');
-    var ret = guide[guide.length-2];
+    var ret = guide[guide.length-1];
+    return ret;
+}
+
+function getCurGuide() {
+    var guide = document.getElementsByClassName('novel_bn');
+    var ret = guide[guide.length - 2];
     return ret;
 }
 
@@ -112,10 +124,16 @@ document.addEventListener('scrollBottom', function () {
     if (isExistNext()) {
         if (blocked) return;
         blocked = true;
-        var curGuide = getGuide(document);
+        var curGuide = getCurGuide();
+        console.log(curGuide);
         const nextUrl = getNextUrl(curGuide);
         console.log(nextUrl);
-        if (nextUrl === null) return;
+        if (nextUrl === null) {
+            const honbuns = document.getElementsByClassName('novel_honbun');
+            var lastHonbun = honbuns[honbuns.length-1];
+            lastHonbun.insertAdjacentElement('afterend', curGuide);
+            return;
+        }
         var xhr = new XMLHttpRequest();
         xhr.open('GET', nextUrl, true);
         xhr.responseType = 'document';
@@ -140,7 +158,7 @@ document.addEventListener('scrollBottom', function () {
                 }
 
                 var parent = document.getElementById('novel_color');
-                var nextGuide = getGuide(nextContent);
+                var nextGuide = getNextGuide(nextContent);
 
                 var titles = document.getElementsByClassName('novel_subtitle');
                 const titleLists = Array.from(titles);
@@ -176,7 +194,6 @@ document.addEventListener('scrollBottom', function () {
                     chrome.storage.local.set(entity, function () {
                         console.log('bookmark updated!');
                         chrome.runtime.sendMessage({message: "update", novelId: novelId}, function (res) {
-                            console.log(res);
                         });
                     });
                 }
