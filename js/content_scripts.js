@@ -2,6 +2,7 @@ var blocked = false;
 var novelId;
 
 window.onload = function () {
+    setReadLaterButton();
     var elem = document.getElementById('novel_honbun');
     if (elem) {
         elem.removeAttribute('id');
@@ -28,12 +29,58 @@ window.onload = function () {
 
     var guides = document.getElementsByClassName('novel_bn');
     var lastGuide = guides[guides.length - 1];
-    lastGuide.innerHTML = null;
+    if (lastGuide) {
+        lastGuide.innerHTML = null;
+    }
     var atogaki = document.getElementById('novel_a');
     if (atogaki) {
         atogaki.innerHTML = null;
     }
 };
+
+// 後で読む機能
+function setReadLaterButton() {
+    const urlElements = location.href.split('/');
+    if (urlElements.length < 5) {
+        return;
+    }
+    var novelId = '';
+    novelId = urlElements[3];
+    const url = 'https://ncode.syosetu.com/${novelId}/';
+    var contents1 = document.getElementsByClassName('contents1')[0];
+    var headNav = document.getElementById('head_nav');
+
+    var title = '';
+    if (urlElements.length === 5) {
+        title = document.getElementsByClassName('novel_title')[0].textContent;
+    }
+    else if (urlElements.length === 6) {
+        title = contents1.getElementsByTagName('a')[0].textContent;
+    }
+
+    var laterButton = document.createElement('a');
+    laterButton.id = 'later-button';
+    laterButton.href = '#';
+    laterButton.innerHTML = '「後で読む」に追加';
+    laterButton.addEventListener('click', function() {
+        var entity = {};
+        const date = new Date();
+        // 後で読むやつはIDの頭に$をつける
+        entity['$'+novelId] = {
+            "title": title,
+            "url": url,
+            "number": 0,
+            "date": date.getTime()
+        }
+        console.log(entity);
+        chrome.storage.local.set(entity, function () {
+            console.log('readLaterList updated!');
+            chrome.runtime.sendMessage({ message: "readLater"}, function (res) {
+            });
+        });
+    });
+    headNav.appendChild(laterButton);
+}
 
 chrome.runtime.onMessage.addListener(function (req, sender, sendResponse) {
     if (req.message === 'novelId') {
@@ -204,4 +251,3 @@ document.addEventListener('scrollBottom', function () {
         }
     }
 });
-

@@ -1,8 +1,3 @@
-function getNovelId(url) {
-    const novelId = url.split('/')[3];
-    return novelId;
-}
-
 function getBookmarkData(listContainer, curContainer, novelId) {
     return new Promise((resolve, reject) => {
         chrome.storage.local.get(function(items) {
@@ -27,7 +22,7 @@ function getBookmarkData(listContainer, curContainer, novelId) {
                     return 1;
                 }
             });
-
+            list = list.filter((el) => el.id[0] !== '$');
             console.log(list);
             const param = [listContainer, curContainer, novelId, list]
             resolve(param);
@@ -52,7 +47,7 @@ function showBookmarkList(param) {
 
             var removeButton = document.createElement('button');
             removeButton.type = 'button';
-            removeButton.setAttribute('name', getNovelId(url));
+            removeButton.setAttribute('name', el['id']);
             removeButton.classList.add('delete-button');
             removeButton.innerHTML = 'x'
 
@@ -168,7 +163,7 @@ function load() {
 chrome.runtime.onMessage.addListener(function (req, sender, sendResponse) {
     if (req.message === 'update') {
         updateBookmarks(req.novelId);
-        sendResponse('updated!');
+        sendResponse('bookmark updated!');
     }
     return true;
 });
