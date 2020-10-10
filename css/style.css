@@ -38,3 +38,29 @@
     background-color: #99bbcc;
     color: #ffffff;
 }
+
+#my-alert {
+    position: fixed;
+    height: 300px;
+    width: 600px;
+    background: white;
+    top:calc(50% - 300px/2);
+    left:calc(50% - 600px/2);
+    border: solid 5px #666666;
+    box-sizing: border-box;
+    border-radius: 10px;
+}
+
+.alert-message {
+    text-align: center;
+    color: #666666;
+    margin-top: 100px;
+}
+
+.checkmark {
+    position: relative;
+    height: 50%;
+    width: 25%;
+    top: 40px;
+    left: 220px;
+}
