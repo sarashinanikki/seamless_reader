@@ -77,9 +77,29 @@ function setReadLaterButton() {
             console.log('readLaterList updated!');
             chrome.runtime.sendMessage({ message: "readLater"}, function (res) {
             });
+            myAlert();
         });
     });
     headNav.appendChild(laterButton);
+}
+
+function myAlert() {
+    var body = document.querySelector('body');
+    var dialog = document.createElement('div');
+    dialog.id = 'my-alert'
+    var message = document.createElement('p');
+    message.className = 'alert-message';
+    message.innerHTML = '登録されました';
+    var check = document.createElement('img');
+    check.className = 'checkmark';
+    check.src = chrome.runtime.getURL('images/checkmark.png');
+    dialog.appendChild(check);
+    dialog.appendChild(message);
+    body.appendChild(dialog);
+
+    setTimeout(function() {
+        body.removeChild(dialog);
+    }, 3000);
 }
 
 chrome.runtime.onMessage.addListener(function (req, sender, sendResponse) {
