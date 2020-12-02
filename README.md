@@ -56,7 +56,9 @@
 
 ## インストール
 
-まだ公開できてないです
+https://chrome.google.com/webstore/detail/web-novel-seamless-reader/cbdpobeklhoeimjnmabdcbbekkgnnbph?hl=ja
+
+ここからインストールできます
 
 ## 開発方法
 
