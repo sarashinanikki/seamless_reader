@@ -46,7 +46,7 @@ function setReadLaterButton() {
     }
     var novelId = '';
     novelId = urlElements[3];
-    const url = 'https://ncode.syosetu.com/${novelId}/';
+    const url = `https://ncode.syosetu.com/${novelId}/`;
     var contents1 = document.getElementsByClassName('contents1')[0];
     var headNav = document.getElementById('head_nav');
 
