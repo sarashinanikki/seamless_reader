@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Web-novel Seamless Reader",
     "description": "小説家になろう等で、スクロールだけでシームレスに読めるようにする拡張です",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "content_scripts": [
         {
             "matches": [
